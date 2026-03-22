@@ -1,14 +1,38 @@
 import { createRouter, createWebHistory } from "vue-router";
 import LoginView from "@/views/LoginView.vue";
 
+// layouts
+import AdminLayout from "@/layouts/admin/AdminLayout.vue";
+
 const routes = [
   { path: "/login", component: LoginView },
 
+  // ADMIN (có sidebar)
   {
     path: "/admin",
-    component: () => import("@/views/AdminView.vue"),
+    component: AdminLayout,
     meta: { role: "ADMIN" },
+    children: [
+      {
+        path: "",
+        component: () => import("@/views/AdminView.vue"),
+      },
+      {
+        path: "books",
+        component: () => import("@/views/admin/Books.vue"),
+      },
+      {
+        path: "categories",
+        component: () => import("@/views/admin/Categories.vue"),
+      },
+      {
+        path: "authors",
+        component: () => import("@/views/admin/Authors.vue"),
+      },
+    ],
   },
+
+  // OTHER ROLE
   {
     path: "/librarian",
     component: () => import("@/views/LibrarianView.vue"),
@@ -26,19 +50,29 @@ const router = createRouter({
   routes,
 });
 
-// guard
+// 🔐 GUARD (improve)
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem("accessToken");
 
+  // chưa login
   if (!token && to.path !== "/login") {
     return next("/login");
   }
 
   if (token) {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    const role = payload?.role;
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
 
-    if (to.meta.role && to.meta.role !== role) {
+      // ⚠️ tuỳ BE: role hoặc scope
+      const role = payload?.role || payload?.scope;
+
+      // check role
+      if (to.meta.role && to.meta.role !== role) {
+        return next("/login");
+      }
+    } catch (e) {
+      // token lỗi
+      localStorage.removeItem("accessToken");
       return next("/login");
     }
   }
