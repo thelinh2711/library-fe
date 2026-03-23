@@ -10,13 +10,15 @@ export const getBookDetail = (id) => {
   return axiosClient.get(`/books/${id}`);
 };
 
-export const createBook = (data) => {
-  return axiosClient.post("/books", data);
-};
-
-export const updateBook = (id, data) => {
-  return axiosClient.put(`/books/${id}`, data);
-};
+export const createBook = (formData) =>
+  axiosClient.post("/books", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+ 
+export const updateBook = (id, formData) =>
+  axiosClient.put(`/books/${id}`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
 
 export const deleteBook = (id) => {
   return axiosClient.delete(`/books/${id}`);

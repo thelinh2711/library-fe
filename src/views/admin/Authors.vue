@@ -58,46 +58,81 @@
       </table>
     </div>
 
-    <!-- Modal -->
-    <div
-      v-if="showModal"
-      class="fixed inset-0 bg-gray-500/20 flex items-center justify-center"
-    >
-      <div class="bg-white p-6 rounded w-96">
-        <h2 class="text-xl mb-4">
-          {{ isEdit ? "Sửa" : "Thêm" }} tác giả
-        </h2>
+    <!-- Modal Add/Edit Author -->
+<div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+  <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden">
 
+    <!-- Header -->
+    <div class="bg-gradient-to-br from-slate-800 to-slate-700 px-6 py-5 flex items-center justify-between gap-3">
+      <div>
+        <p class="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-1">
+          {{ isEdit ? 'Cập nhật tác giả' : 'Thêm mới' }}
+        </p>
+        <h2 class="text-white text-lg font-bold leading-snug">
+          {{ isEdit ? form.name || 'Chỉnh sửa tác giả' : 'Thêm tác giả' }}
+        </h2>
+      </div>
+      <button
+        @click="closeModal"
+        class="flex-shrink-0 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg p-1.5 transition-colors"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="px-6 py-5 space-y-4">
+
+      <div>
+        <p class="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-2">Tên tác giả</p>
         <input
           v-model="form.name"
-          placeholder="Tên tác giả"
-          class="w-full border px-3 py-2 mb-3"
+          placeholder="Nhập tên tác giả..."
+          class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300 transition"
         />
+      </div>
 
+      <div>
+        <p class="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-2">Ngày sinh</p>
         <input
           v-model="form.dateOfBirth"
           type="date"
-          class="w-full border px-3 py-2 mb-3"
+          class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-300 transition"
         />
+      </div>
 
+      <div>
+        <p class="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-2">Tiểu sử</p>
         <textarea
           v-model="form.bio"
-          placeholder="Tiểu sử"
-          class="w-full border px-3 py-2 mb-4"
+          placeholder="Nhập tiểu sử tác giả..."
+          rows="3"
+          class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300 transition resize-none"
         />
-
-        <div class="flex justify-end gap-2">
-          <button @click="closeModal">Huỷ</button>
-
-          <button
-            @click="save"
-            class="bg-blue-500 text-white px-4 py-2 rounded"
-          >
-            Lưu
-          </button>
-        </div>
       </div>
+
     </div>
+
+    <!-- Footer -->
+    <div class="px-6 py-4 border-t border-slate-100 flex justify-end gap-2">
+      <button
+        @click="closeModal"
+        class="text-slate-500 hover:text-slate-700 text-sm font-semibold px-5 py-2.5 rounded-xl border border-slate-200 hover:border-slate-300 transition-all duration-150"
+      >
+        Huỷ
+      </button>
+      <button
+        @click="save"
+        class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-150"
+      >
+        {{ isEdit ? 'Cập nhật' : 'Thêm tác giả' }}
+      </button>
+    </div>
+
+  </div>
+</div>
   </div>
 </template>
 
