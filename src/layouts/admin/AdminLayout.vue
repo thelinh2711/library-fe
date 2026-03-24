@@ -68,44 +68,19 @@
 </template>
 
 <script setup>
-import { computed, h } from "vue";
+import { computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import { LogOut } from "lucide-vue-next";
+import { LogOut, LayoutDashboard, BookOpen, Tag, Users, GraduationCap } from "lucide-vue-next";
 
 const router = useRouter();
 const route  = useRoute();
 
-const IconDashboard = () =>
-  h("svg", { fill: "none", stroke: "currentColor", "stroke-width": "2", viewBox: "0 0 24 24" }, [
-    h("rect", { x: "3", y: "3", width: "7", height: "7", rx: "1" }),
-    h("rect", { x: "14", y: "3", width: "7", height: "7", rx: "1" }),
-    h("rect", { x: "3", y: "14", width: "7", height: "7", rx: "1" }),
-    h("rect", { x: "14", y: "14", width: "7", height: "7", rx: "1" }),
-  ]);
-
-const IconBook = () =>
-  h("svg", { fill: "none", stroke: "currentColor", "stroke-width": "2", viewBox: "0 0 24 24" }, [
-    h("path", { d: "M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" }),
-  ]);
-
-const IconTag = () =>
-  h("svg", { fill: "none", stroke: "currentColor", "stroke-width": "2", viewBox: "0 0 24 24" }, [
-    h("path", { d: "M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" }),
-    h("line", { x1: "7", y1: "7", x2: "7.01", y2: "7" }),
-  ]);
-
-const IconUser = () =>
-  h("svg", { fill: "none", stroke: "currentColor", "stroke-width": "2", viewBox: "0 0 24 24" }, [
-    h("path", { d: "M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" }),
-    h("circle", { cx: "9", cy: "7", r: "4" }),
-    h("path", { d: "M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" }),
-  ]);
-
 const navItems = [
-  { to: "/admin",            label: "Dashboard", icon: IconDashboard },
-  { to: "/admin/books",      label: "Sách",       icon: IconBook      },
-  { to: "/admin/categories", label: "Thể loại",   icon: IconTag       },
-  { to: "/admin/authors",    label: "Tác giả",    icon: IconUser      },
+  { to: "/admin",            label: "Dashboard", icon: LayoutDashboard },
+  { to: "/admin/books",      label: "Sách",       icon: BookOpen        },
+  { to: "/admin/categories", label: "Thể loại",   icon: Tag             },
+  { to: "/admin/authors",    label: "Tác giả",    icon: Users           },
+  { to: "/admin/students",   label: "Sinh viên",  icon: GraduationCap   },
 ];
 
 const currentTitle = computed(() => {
