@@ -2,30 +2,48 @@
 <template>
   <div>
     <!-- Header + Search -->
-    <div class="flex justify-between mb-4 items-center">
-      <h1 class="text-2xl font-bold">Quản lý sách</h1>
-
-      <div class="flex gap-2 items-center">
-        <input
-          v-model="bookStore.keyword"
-          placeholder="Tìm kiếm..."
-          class="border px-3 py-2 rounded"
-          @keyup.enter="bookStore.fetchBooks"
-        />
-
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-xl font-semibold text-slate-800 tracking-tight">Quản lý sách</h1>
+        <p class="text-xs text-slate-400 mt-0.5">Danh sách toàn bộ sách trong hệ thống</p>
+      </div>
+ 
+      <div class="flex items-center gap-2">
+        <!-- Search -->
+        <div class="relative">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none"
+               fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+          </svg>
+          <input
+            v-model="bookStore.keyword"
+            placeholder="Tìm kiếm..."
+            class="h-9 w-52 rounded-lg border border-slate-200 bg-white pl-8 pr-3 text-sm text-slate-700 placeholder-slate-400 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+            @keyup.enter="bookStore.fetchBooks"
+          />
+        </div>
+ 
+        <!-- Category filter -->
         <select
           v-model="bookStore.category"
           @change="bookStore.fetchBooks"
-          class="border px-3 py-2 rounded"
+          class="h-9 rounded-lg border border-slate-200 bg-white px-3 pr-8 text-sm text-slate-600 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 cursor-pointer"
         >
-          <option value="">-- Chọn thể loại --</option>
+          <option value="">Tất cả thể loại</option>
           <option v-for="c in categoryStore.categories" :key="c.id" :value="c.name">
             {{ c.name }}
           </option>
         </select>
-
-        <button @click="openCreate" class="bg-blue-500 text-white px-4 py-2 rounded">
-          + Thêm
+ 
+        <!-- Add button -->
+        <button
+          @click="openCreate"
+          class="inline-flex h-9 items-center gap-1.5 rounded-lg bg-indigo-600 px-4 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-700 active:scale-95"
+        >
+          <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          Thêm sách
         </button>
       </div>
     </div>
