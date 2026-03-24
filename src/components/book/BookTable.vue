@@ -38,7 +38,8 @@
           <td class="p-2">{{ b.quantity }}</td>
           <td class="p-2">{{ b.availableQuantity }}</td>
           <td class="p-2 max-w-[160px] truncate">{{ b.description }}</td>
-          <td class="p-2 flex gap-2">
+          <td class="p-2 align-middle">
+            <div class="flex gap-2 items-center">
             <button @click="$emit('view', b.id)" class="text-blue-500 hover:text-blue-600" title="Xem chi tiết">
               <Eye class="w-5 h-5" />
             </button>
@@ -48,6 +49,7 @@
             <button @click="$emit('remove', b.id)" class="text-red-500 hover:text-red-600" title="Xoá">
               <Trash2 class="w-5 h-5" />
             </button>
+            </div>
           </td>
         </tr>
         <tr v-if="!books.length">
