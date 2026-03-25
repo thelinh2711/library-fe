@@ -1,4 +1,3 @@
-<!-- src/views/admin/Categories.vue -->
 <template>
   <div class="flex flex-col gap-5">
 
@@ -6,7 +5,7 @@
     <div class="flex flex-wrap items-start justify-between gap-3">
       <div>
         <h1 class="text-xl font-bold text-slate-800">Quản lý Thể loại</h1>
-        <p class="text-sm text-slate-400 mt-0.5">{{ categoryStore.categories.length }} thể loại trong hệ thống</p>
+        <p class="text-sm text-slate-400 mt-0.5">{{ categoryStore.totalElements }} thể loại trong hệ thống</p>
       </div>
       <button
         class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-violet-600 rounded-xl shadow-md shadow-indigo-200 hover:opacity-90 transition"
@@ -22,9 +21,8 @@
       <!-- Toolbar -->
       <div class="flex items-center justify-between px-5 py-3.5 border-b border-slate-50">
         <p class="text-xs text-slate-500">
-          Tổng <span class="font-semibold text-slate-700">{{ categoryStore.categories.length }}</span> thể loại
+          Tổng <span class="font-semibold text-slate-700">{{ categoryStore.totalElements }}</span> thể loại
         </p>
-        <!-- Search inline -->
         <div class="relative">
           <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
           <input
@@ -32,12 +30,13 @@
             type="text"
             placeholder="Tìm thể loại…"
             class="pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg bg-white text-slate-700 placeholder-slate-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition w-48"
+            @input="onSearch"
           />
         </div>
       </div>
 
       <!-- Empty state -->
-      <div v-if="filtered.length === 0" class="flex flex-col items-center gap-2 py-16 text-slate-400">
+      <div v-if="categoryStore.categories.length === 0" class="flex flex-col items-center gap-2 py-16 text-slate-400">
         <Tag class="w-10 h-10 opacity-30" />
         <p class="text-sm font-semibold text-slate-500">Chưa có thể loại nào</p>
         <p class="text-xs">Thêm thể loại đầu tiên</p>
@@ -48,18 +47,25 @@
         <thead>
           <tr class="border-b border-slate-100">
             <th :class="TH" class="w-8">#</th>
-            <th :class="TH">Tên thể loại</th>
+            <th :class="TH" class="cursor-pointer select-none" @click="categoryStore.toggleSort()">
+              <div class="flex items-center gap-1">
+                Tên thể loại
+                <span class="text-slate-300">{{ categoryStore.sortDir === 'asc' ? '↑' : '↓' }}</span>
+              </div>
+            </th>
             <th :class="TH">Mô tả</th>
             <th :class="[TH, 'text-right']">Thao tác</th>
           </tr>
         </thead>
         <tbody>
           <tr
-            v-for="(c, index) in filtered"
+            v-for="(c, index) in categoryStore.categories"
             :key="c.id"
             class="border-b border-slate-50 hover:bg-slate-50/70 transition-colors"
           >
-            <td class="px-4 py-3 text-xs text-slate-400 font-medium">{{ index + 1 }}</td>
+            <td class="px-4 py-3 text-xs text-slate-400 font-medium">
+              {{ categoryStore.page * categoryStore.size + index + 1 }}
+            </td>
 
             <td class="px-4 py-3">
               <div class="flex items-center gap-2.5">
@@ -95,6 +101,31 @@
           </tr>
         </tbody>
       </table>
+
+      <!-- Pagination -->
+      <div v-if="categoryStore.totalPages > 1" class="flex items-center justify-between px-5 py-3 border-t border-slate-50">
+        <p class="text-xs text-slate-400">
+          Trang <span class="font-semibold text-slate-600">{{ categoryStore.page + 1 }}</span>
+          / {{ categoryStore.totalPages }}
+        </p>
+        <div class="flex gap-1.5">
+          <button
+            class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+            :disabled="categoryStore.page === 0"
+            @click="categoryStore.goToPage(categoryStore.page - 1)"
+          >
+            Trước
+          </button>
+          <button
+            class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+            :disabled="categoryStore.last"
+            @click="categoryStore.goToPage(categoryStore.page + 1)"
+          >
+            Sau
+          </button>
+        </div>
+      </div>
+
     </div>
 
     <!-- Modal Add/Edit -->
@@ -176,7 +207,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from "vue";
+import { onMounted, reactive, ref } from "vue";
 import { useCategoryStore } from "@/stores/categoryStore";
 import { Plus, Pencil, Trash2, Tag, Search, X } from "lucide-vue-next";
 
@@ -194,13 +225,13 @@ const TH    = "px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-wi
 const LABEL = "text-xs font-semibold text-slate-500";
 const INPUT = "w-full px-3 py-2 text-sm text-slate-700 border border-slate-200 rounded-xl bg-white outline-none placeholder-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition";
 
-const filtered = computed(() => {
-  if (!keyword.value.trim()) return categoryStore.categories;
-  const q = keyword.value.toLowerCase();
-  return categoryStore.categories.filter(
-    (c) => c.name?.toLowerCase().includes(q) || c.description?.toLowerCase().includes(q)
-  );
-});
+let debounceTimer = null;
+const onSearch = () => {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => {
+    categoryStore.search(keyword.value.trim());
+  }, 400);
+};
 
 onMounted(() => categoryStore.fetchCategories());
 
