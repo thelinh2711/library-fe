@@ -64,7 +64,7 @@
             class="border-b border-slate-50 hover:bg-slate-50/70 transition-colors"
           >
             <td class="px-4 py-3 text-xs text-slate-400 font-medium">
-              {{ categoryStore.page * categoryStore.size + index + 1 }}
+              {{ currentPage * categoryStore.size + index + 1 }}
             </td>
 
             <td class="px-4 py-3">
@@ -103,27 +103,35 @@
       </table>
 
       <!-- Pagination -->
-      <div v-if="categoryStore.totalPages > 1" class="flex items-center justify-between px-5 py-3 border-t border-slate-50">
-        <p class="text-xs text-slate-400">
-          Trang <span class="font-semibold text-slate-600">{{ categoryStore.page + 1 }}</span>
-          / {{ categoryStore.totalPages }}
-        </p>
-        <div class="flex gap-1.5">
-          <button
-            class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
-            :disabled="categoryStore.page === 0"
-            @click="categoryStore.goToPage(categoryStore.page - 1)"
-          >
-            Trước
-          </button>
-          <button
-            class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
-            :disabled="categoryStore.last"
-            @click="categoryStore.goToPage(categoryStore.page + 1)"
-          >
-            Sau
-          </button>
-        </div>
+      <div v-if="totalPages > 1" class="flex items-center justify-center gap-1 px-5 py-3.5 border-t border-slate-50">
+        <button
+          class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:border-indigo-300 hover:text-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed transition"
+          :disabled="currentPage === 0"
+          @click="categoryStore.goToPage(currentPage - 1)"
+        >
+          <ChevronLeft class="h-4 w-4" />
+        </button>
+
+        <button
+          v-for="p in pageNumbers" :key="p"
+          :class="[
+            'min-w-[32px] h-8 px-2 rounded-lg text-sm font-medium transition',
+            p === '…' ? 'text-slate-400 cursor-default border-transparent' :
+            p === currentPage + 1
+              ? 'bg-indigo-500 text-white border border-indigo-500'
+              : 'border border-slate-200 text-slate-600 hover:border-indigo-300 hover:text-indigo-500'
+          ]"
+          :disabled="p === '…'"
+          @click="p !== '…' && categoryStore.goToPage(p - 1)"
+        >{{ p }}</button>
+
+        <button
+          class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:border-indigo-300 hover:text-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed transition"
+          :disabled="currentPage === totalPages - 1"
+          @click="categoryStore.goToPage(currentPage + 1)"
+        >
+          <ChevronRight class="h-4 w-4" />
+        </button>
       </div>
 
     </div>
@@ -207,9 +215,9 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import { useCategoryStore } from "@/stores/categoryStore";
-import { Plus, Pencil, Trash2, Tag, Search, X } from "lucide-vue-next";
+import { Plus, Pencil, Trash2, Tag, Search, X, ChevronLeft, ChevronRight } from "lucide-vue-next";
 
 const categoryStore = useCategoryStore();
 
@@ -224,6 +232,20 @@ const form = reactive({ name: "", description: "" });
 const TH    = "px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap";
 const LABEL = "text-xs font-semibold text-slate-500";
 const INPUT = "w-full px-3 py-2 text-sm text-slate-700 border border-slate-200 rounded-xl bg-white outline-none placeholder-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition";
+
+const currentPage = computed(() => categoryStore.page);
+const totalPages  = computed(() => categoryStore.totalPages);
+
+const pageNumbers = computed(() => {
+  const t = totalPages.value, c = currentPage.value + 1;
+  if (t <= 7) return Array.from({ length: t }, (_, i) => i + 1);
+  const pages = [1];
+  if (c > 3) pages.push("…");
+  for (let p = Math.max(2, c - 1); p <= Math.min(t - 1, c + 1); p++) pages.push(p);
+  if (c < t - 2) pages.push("…");
+  pages.push(t);
+  return pages;
+});
 
 let debounceTimer = null;
 const onSearch = () => {
