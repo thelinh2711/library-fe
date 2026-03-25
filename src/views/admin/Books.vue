@@ -7,9 +7,9 @@
         <h1 class="text-xl font-semibold text-slate-800 tracking-tight">Quản lý sách</h1>
         <p class="text-xs text-slate-400 mt-0.5">Danh sách toàn bộ sách trong hệ thống</p>
       </div>
- 
+
       <div class="flex items-center gap-2">
-        <!-- Search -->
+        <!-- Search keyword -->
         <div class="relative">
           <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none"
                fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -22,19 +22,85 @@
             @keyup.enter="bookStore.fetchBooks"
           />
         </div>
- 
-        <!-- Category filter -->
-        <select
-          v-model="bookStore.category"
-          @change="bookStore.fetchBooks"
-          class="h-9 rounded-lg border border-slate-200 bg-white px-3 pr-8 text-sm text-slate-600 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 cursor-pointer"
+
+        <!-- Category filter (searchable dropdown) -->
+        <div class="relative" ref="categoryDropdownRef">
+          <!-- Trigger -->
+          <button
+            type="button"
+            class="h-9 min-w-[160px] rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none flex items-center justify-between gap-2 transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 cursor-pointer"
+            @click="toggleCategoryDropdown"
+          >
+            <span :class="bookStore.category ? 'text-slate-700' : 'text-slate-400'">
+              {{ selectedCategoryLabel }}
+            </span>
+            <svg class="h-3.5 w-3.5 text-slate-400 flex-shrink-0 transition-transform" :class="showCategoryDropdown ? 'rotate-180' : ''" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </button>
+
+          <!-- Dropdown panel -->
+          <div
+            v-if="showCategoryDropdown"
+            class="absolute right-0 mt-1 w-56 bg-white border border-slate-200 rounded-xl shadow-lg z-30 overflow-hidden"
+          >
+            <!-- Search input -->
+            <div class="p-2 border-b border-slate-100">
+              <div class="relative">
+                <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none"
+                     fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+                </svg>
+                <input
+                  v-model="categorySearch"
+                  ref="categorySearchInput"
+                  placeholder="Tìm thể loại..."
+                  class="w-full h-8 rounded-lg border border-slate-200 bg-slate-50 pl-8 pr-3 text-xs text-slate-700 placeholder-slate-400 outline-none focus:border-indigo-400"
+                />
+              </div>
+            </div>
+
+            <!-- Options list -->
+            <ul class="max-h-52 overflow-y-auto py-1">
+              <li>
+                <button
+                  type="button"
+                  class="w-full text-left px-3 py-2 text-sm transition hover:bg-slate-50"
+                  :class="bookStore.category === '' ? 'text-indigo-600 font-semibold' : 'text-slate-600'"
+                  @click="selectCategory('')"
+                >
+                  Tất cả thể loại
+                </button>
+              </li>
+              <li v-for="c in filteredCategories" :key="c.id">
+                <button
+                  type="button"
+                  class="w-full text-left px-3 py-2 text-sm transition hover:bg-slate-50"
+                  :class="bookStore.category === c.name ? 'text-indigo-600 font-semibold' : 'text-slate-600'"
+                  @click="selectCategory(c.name)"
+                >
+                  {{ c.name }}
+                </button>
+              </li>
+              <li v-if="filteredCategories.length === 0" class="px-3 py-3 text-xs text-slate-400 text-center">
+                Không tìm thấy thể loại
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Sort button -->
+        <button
+          type="button"
+          class="h-9 flex items-center gap-1.5 px-3 text-sm font-medium text-slate-500 border border-slate-200 rounded-lg bg-white hover:border-indigo-300 hover:text-indigo-500 transition"
+          @click="bookStore.toggleSort()"
         >
-          <option value="">Tất cả thể loại</option>
-          <option v-for="c in categoryStore.categories" :key="c.id" :value="c.name">
-            {{ c.name }}
-          </option>
-        </select>
- 
+          <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M8 6l4-4 4 4M16 18l-4 4-4-4M12 2v20"/>
+          </svg>
+          {{ bookStore.sortDir === 'asc' ? 'A → Z' : 'Z → A' }}
+        </button>
+
         <!-- Add button -->
         <button
           @click="openCreate"
@@ -51,22 +117,25 @@
     <!-- Table -->
     <BookTable
       :books="bookStore.books"
+      :loading="bookStore.loading"
       :page="bookStore.page"
       :total-pages="bookStore.totalPages"
       @view="viewDetail"
       @edit="openEdit"
       @remove="remove"
       @page-change="bookStore.setPage"
+      @sort-change="bookStore.setSort"
     />
 
     <!-- Modal Add / Edit -->
     <BookFormModal
       v-if="showModal"
+      :key="isEdit ? currentId : 'create'"
       :is-edit="isEdit"
       :initial-form="form"
       :existing-image-url="existingImageUrl"
-      :authors="authorStore.authors"
-      :categories="categoryStore.categories"
+      :authors="authorStore.allAuthors"
+      :categories="categoryStore.allCategories"
       @close="showModal = false"
       @save="handleSave"
     />
@@ -81,13 +150,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { useBookStore } from "@/stores/bookStore";
 import { useAuthorStore } from "@/stores/authorStore";
 import { useCategoryStore } from "@/stores/categoryStore";
 import BookTable from "@/components/book/BookTable.vue";
 import BookFormModal from "@/components/book/BookFormModal.vue";
 import BookDetailModal from "@/components/book/BookDetailModal.vue";
+import { watch } from "vue";
 
 const bookStore = useBookStore();
 const authorStore = useAuthorStore();
@@ -99,6 +169,64 @@ const currentId = ref(null);
 const existingImageUrl = ref(null);
 const showDetailModal = ref(false);
 
+// ── Category searchable dropdown ──────────────────────────────
+const showCategoryDropdown = ref(false);
+const categorySearch = ref("");
+const categoryDropdownRef = ref(null);
+const categorySearchInput = ref(null);
+
+const selectedCategoryLabel = computed(() =>
+  bookStore.category
+    ? (categoryStore.categories || []).find(
+        (c) => c.name === bookStore.category
+      )?.name ?? bookStore.category
+    : "Tất cả thể loại"
+);
+
+const filteredCategories = computed(() => categoryStore.categories);
+
+const toggleCategoryDropdown = async () => {
+  showCategoryDropdown.value = !showCategoryDropdown.value;
+  if (showCategoryDropdown.value) {
+    categorySearch.value = "";
+    await nextTick();
+    categorySearchInput.value?.focus();
+  }
+};
+
+const selectCategory = (name) => {
+  bookStore.category = name;
+  bookStore.page = 0;
+  bookStore.fetchBooks();
+  showCategoryDropdown.value = false;
+  categorySearch.value = "";
+};
+
+const onClickOutside = (e) => {
+  if (categoryDropdownRef.value && !categoryDropdownRef.value.contains(e.target)) {
+    showCategoryDropdown.value = false;
+  }
+};
+
+// ── Lifecycle ─────────────────────────────────────────────────
+onMounted(async () => {
+  await Promise.all([
+    authorStore.fetchAuthors(),
+    categoryStore.fetchCategories(),
+    bookStore.fetchBooks(),
+  ]);
+  document.addEventListener("click", onClickOutside);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener("click", onClickOutside);
+});
+
+watch(categorySearch, async (val) => {
+  await categoryStore.search(val);
+});
+
+// ── Form ──────────────────────────────────────────────────────
 const defaultForm = () => ({
   title: "",
   publisher: "",
@@ -112,12 +240,6 @@ const defaultForm = () => ({
 });
 
 const form = ref(defaultForm());
-
-onMounted(async () => {
-  await authorStore.fetchAuthors();
-  await categoryStore.fetchCategories();
-  await bookStore.fetchBooks();
-});
 
 const openCreate = () => {
   isEdit.value = false;
@@ -151,7 +273,6 @@ const openEdit = async (book) => {
   showModal.value = true;
 };
 
-// payload is already a FormData built inside BookFormModal
 const handleSave = async (formData) => {
   if (isEdit.value) {
     await bookStore.editBook(currentId.value, formData);

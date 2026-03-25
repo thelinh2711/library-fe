@@ -23,15 +23,24 @@
         <p class="text-xs text-slate-500">
           Tổng <span class="font-semibold text-slate-700">{{ categoryStore.totalElements }}</span> thể loại
         </p>
-        <div class="relative">
-          <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
-          <input
-            v-model="keyword"
-            type="text"
-            placeholder="Tìm thể loại…"
-            class="pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg bg-white text-slate-700 placeholder-slate-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition w-48"
-            @input="onSearch"
-          />
+        <div class="flex items-center gap-2">
+          <div class="relative">
+            <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+            <input
+              v-model="keyword"
+              type="text"
+              placeholder="Tìm thể loại…"
+              class="pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg bg-white text-slate-700 placeholder-slate-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition w-48"
+              @input="onSearch"
+            />
+          </div>
+          <button
+            class="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-slate-500 border border-slate-200 rounded-lg hover:border-indigo-300 hover:text-indigo-500 transition"
+            @click="categoryStore.toggleSort()"
+          >
+            <ArrowUpDown class="h-3 w-3" />
+            {{ categoryStore.sortDir === 'asc' ? 'A → Z' : 'Z → A' }}
+          </button>
         </div>
       </div>
 
@@ -47,12 +56,7 @@
         <thead>
           <tr class="border-b border-slate-100">
             <th :class="TH" class="w-8">#</th>
-            <th :class="TH" class="cursor-pointer select-none" @click="categoryStore.toggleSort()">
-              <div class="flex items-center gap-1">
-                Tên thể loại
-                <span class="text-slate-300">{{ categoryStore.sortDir === 'asc' ? '↑' : '↓' }}</span>
-              </div>
-            </th>
+            <th :class="TH">Tên thể loại</th>
             <th :class="TH">Mô tả</th>
             <th :class="[TH, 'text-right']">Thao tác</th>
           </tr>
@@ -217,7 +221,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from "vue";
 import { useCategoryStore } from "@/stores/categoryStore";
-import { Plus, Pencil, Trash2, Tag, Search, X, ChevronLeft, ChevronRight } from "lucide-vue-next";
+import { Plus, Pencil, Trash2, Tag, Search, X, ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-vue-next";
 
 const categoryStore = useCategoryStore();
 
