@@ -1,7 +1,7 @@
 import axiosClient from "./axiosClient";
 
-export const getAuthors = () => {
-  return axiosClient.get("/authors");
+export const getAuthors = (params) => {
+  return axiosClient.get("/authors", { params });
 };
 
 export const createAuthor = (data) => {

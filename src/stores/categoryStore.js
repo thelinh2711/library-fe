@@ -85,6 +85,11 @@ export const useCategoryStore = defineStore("category", {
       }
     },
 
+    async setPage(page) {
+      this.page = page;
+      await this.fetchCategories();
+    },
+
     async removeCategory(id) {
       const toast = useToast();
       try {
