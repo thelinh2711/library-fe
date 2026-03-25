@@ -32,7 +32,7 @@ export const useAuthorStore = defineStore("author", {
         });
         const data = res.data.result;
         this.authors       = data.content;
-        this.page          = data.page;
+        this.page          = data.number ?? data.page ?? 0;
         this.totalPages    = data.totalPages;
         this.totalElements = data.totalElements;
         this.last          = data.last;
@@ -51,6 +51,11 @@ export const useAuthorStore = defineStore("author", {
     },
 
     async goToPage(page) {
+      this.page = page;
+      await this.fetchAuthors();
+    },
+
+    async setPage(page) {
       this.page = page;
       await this.fetchAuthors();
     },
@@ -83,11 +88,6 @@ export const useAuthorStore = defineStore("author", {
         const message = err.response?.data?.message;
         toast.error(message || "Lỗi khi cập nhật");
       }
-    },
-
-    async setPage(page) {
-      this.page = page;
-      await this.fetchAuthors();
     },
 
     async removeAuthor(id) {

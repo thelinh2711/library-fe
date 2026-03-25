@@ -32,7 +32,7 @@ export const useCategoryStore = defineStore("category", {
         });
         const data = res.data.result;
         this.categories    = data.content;
-        this.page          = data.page;
+        this.page          = data.number ?? data.page ?? 0;
         this.totalPages    = data.totalPages;
         this.totalElements = data.totalElements;
         this.last          = data.last;
@@ -51,6 +51,11 @@ export const useCategoryStore = defineStore("category", {
     },
 
     async goToPage(page) {
+      this.page = page;
+      await this.fetchCategories();
+    },
+
+    async setPage(page) {
       this.page = page;
       await this.fetchCategories();
     },
@@ -83,11 +88,6 @@ export const useCategoryStore = defineStore("category", {
         const message = err.response?.data?.message;
         toast.error(message || "Lỗi khi cập nhật");
       }
-    },
-
-    async setPage(page) {
-      this.page = page;
-      await this.fetchCategories();
     },
 
     async removeCategory(id) {
