@@ -59,17 +59,34 @@
           </div>
         </div>
 
-        <!-- Số lượng -->
+        <!-- Số lượng & Giá -->
         <div>
-          <p class="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-3">Số lượng</p>
+          <p class="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-3">Số lượng & Giá</p>
           <div class="grid grid-cols-2 gap-2">
             <div class="bg-slate-50 rounded-xl p-3">
               <p class="text-slate-400 text-xs font-medium mb-1.5">Tổng số lượng</p>
-              <input v-model.number="form.quantity" type="number" placeholder="0" class="w-full bg-transparent text-slate-800 text-sm font-semibold focus:outline-none" />
+              <input v-model.number="form.quantity" type="number" min="0" placeholder="0" class="w-full bg-transparent text-slate-800 text-sm font-semibold focus:outline-none" />
             </div>
             <div class="bg-emerald-50 rounded-xl p-3">
               <p class="text-emerald-600 text-xs font-medium mb-1.5">Số lượng sẵn có</p>
-              <input v-model.number="form.availableQuantity" type="number" placeholder="0" class="w-full bg-transparent text-emerald-700 text-sm font-semibold focus:outline-none" />
+              <input v-model.number="form.availableQuantity" type="number" min="0" placeholder="0" class="w-full bg-transparent text-emerald-700 text-sm font-semibold focus:outline-none" />
+            </div>
+          </div>
+          <!-- Giá bìa — full width, tách riêng để nổi bật -->
+          <div class="mt-2 bg-amber-50 rounded-xl p-3">
+            <p class="text-amber-600 text-xs font-medium mb-1.5">Giá bìa (VNĐ)</p>
+            <div class="flex items-center gap-2">
+              <input
+                v-model.number="form.price"
+                type="number"
+                min="0"
+                step="1000"
+                placeholder="0"
+                class="w-full bg-transparent text-amber-700 text-sm font-semibold focus:outline-none"
+              />
+              <span class="text-amber-400 text-xs font-medium flex-shrink-0">
+                {{ form.price ? formatPrice(form.price) : '' }}
+              </span>
             </div>
           </div>
         </div>
@@ -84,7 +101,6 @@
         <div>
           <p class="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-3">Tác giả</p>
 
-          <!-- Tags tác giả đã chọn -->
           <div v-if="form.authors.length" class="flex flex-wrap gap-2 mb-2">
             <div
               v-for="(a, index) in form.authors"
@@ -101,12 +117,10 @@
                 <option value="MAIN_AUTHOR">Chính</option>
                 <option value="CO_AUTHOR">Đồng</option>
               </select>
-              <!-- Nút X xoá tác giả -->
               <button
                 type="button"
                 @click="removeAuthor(index)"
                 class="flex items-center justify-center w-4 h-4 ml-1 rounded-full bg-blue-100 hover:bg-red-100 text-blue-400 hover:text-red-500 transition-colors flex-shrink-0"
-                title="Xoá tác giả"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
                   <path d="M18 6L6 18M6 6l12 12"/>
@@ -115,7 +129,6 @@
             </div>
           </div>
 
-          <!-- Dropdown tìm kiếm tác giả -->
           <div class="relative" :ref="el => authorDropdownRef = el">
             <button
               type="button"
@@ -165,7 +178,6 @@
         <div>
           <p class="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-3">Thể loại</p>
 
-          <!-- Tags thể loại đã chọn -->
           <div v-if="form.categoryIds.length" class="flex flex-wrap gap-2 mb-2">
             <div
               v-for="(catId, index) in form.categoryIds"
@@ -173,12 +185,10 @@
               class="flex items-center gap-1 bg-amber-50 border border-amber-100 text-amber-700 text-xs font-medium pl-3 pr-1.5 py-1.5 rounded-full"
             >
               <span class="leading-none">{{ categoryName(catId) }}</span>
-              <!-- Nút X xoá thể loại -->
               <button
                 type="button"
                 @click="removeCategory(index)"
                 class="flex items-center justify-center w-4 h-4 ml-1 rounded-full bg-amber-100 hover:bg-red-100 text-amber-400 hover:text-red-500 transition-colors flex-shrink-0"
-                title="Xoá thể loại"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
                   <path d="M18 6L6 18M6 6l12 12"/>
@@ -187,7 +197,6 @@
             </div>
           </div>
 
-          <!-- Dropdown tìm kiếm thể loại -->
           <div class="relative" :ref="el => categoryDropdownRef = el">
             <button
               type="button"
@@ -275,13 +284,16 @@ const imageFile = ref(null);
 const imagePreview = ref(props.existingImageUrl || null);
 const fileInput = ref(null);
 
+const formatPrice = (value) =>
+  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(value);
+
 // ── Author dropdown ───────────────────────────────────────────
 const showAuthorDropdown = ref(false);
 const authorSearch = ref("");
 const authorDropdownRef = ref(null);
 const authorSearchInput = ref(null);
-const authorResults = ref([]);  // ✅ kết quả từ API
-const selectedAuthorsCache = ref([]); // ✅ cache tên tác giả đã chọn
+const authorResults = ref([]);
+const selectedAuthorsCache = ref([]);
 
 const fetchAuthors = async (keyword = "") => {
   try {
@@ -297,15 +309,13 @@ const onAuthorSearchInput = () => {
 };
 
 const isAuthorSelected = (id) => form.value.authors.some((a) => a.authorId === id);
-
-// Lấy tên từ cache (dùng cho tag đã chọn)
 const authorName = (id) => selectedAuthorsCache.value.find((a) => a.id === id)?.name ?? id;
 
 const toggleAuthorDropdown = async () => {
   showAuthorDropdown.value = !showAuthorDropdown.value;
   if (showAuthorDropdown.value) {
     authorSearch.value = "";
-    await fetchAuthors(); // load mặc định khi mở
+    await fetchAuthors();
     await nextTick();
     authorSearchInput.value?.focus();
   }
@@ -314,7 +324,6 @@ const toggleAuthorDropdown = async () => {
 const addAuthor = (author) => {
   if (isAuthorSelected(author.id)) return;
   form.value.authors.push({ authorId: author.id, role: "MAIN_AUTHOR" });
-  // cache lại tên để hiển thị trên tag
   if (!selectedAuthorsCache.value.find((a) => a.id === author.id)) {
     selectedAuthorsCache.value.push({ id: author.id, name: author.name });
   }
@@ -329,8 +338,8 @@ const showCategoryDropdown = ref(false);
 const categorySearch = ref("");
 const categoryDropdownRef = ref(null);
 const categorySearchInput = ref(null);
-const categoryResults = ref([]); // ✅ kết quả từ API
-const selectedCategoriesCache = ref([]); // ✅ cache tên thể loại đã chọn
+const categoryResults = ref([]);
+const selectedCategoriesCache = ref([]);
 
 const fetchCategories = async (keyword = "") => {
   try {
@@ -346,15 +355,13 @@ const onCategorySearchInput = () => {
 };
 
 const isCategorySelected = (id) => form.value.categoryIds.includes(id);
-
-// Lấy tên từ cache (dùng cho tag đã chọn)
 const categoryName = (id) => selectedCategoriesCache.value.find((c) => c.id === id)?.name ?? id;
 
 const toggleCategoryDropdown = async () => {
   showCategoryDropdown.value = !showCategoryDropdown.value;
   if (showCategoryDropdown.value) {
     categorySearch.value = "";
-    await fetchCategories(); // load mặc định khi mở
+    await fetchCategories();
     await nextTick();
     categorySearchInput.value?.focus();
   }
@@ -363,7 +370,6 @@ const toggleCategoryDropdown = async () => {
 const addCategory = (cat) => {
   if (isCategorySelected(cat.id)) return;
   form.value.categoryIds.push(cat.id);
-  // cache lại tên để hiển thị trên tag
   if (!selectedCategoriesCache.value.find((c) => c.id === cat.id)) {
     selectedCategoriesCache.value.push({ id: cat.id, name: cat.name });
   }
@@ -373,10 +379,9 @@ const addCategory = (cat) => {
 
 const removeCategory = (i) => form.value.categoryIds.splice(i, 1);
 
-// ── Khởi tạo cache cho edit (tên tác giả/thể loại đã có sẵn) ─
+// ── Init cache cho edit ───────────────────────────────────────
 const initCache = async () => {
   if (!props.isEdit) return;
-  // Lấy tên tác giả đã chọn
   if (form.value.authors.length) {
     const res = await getAuthors({ page: 0, size: 50, sort: "ASC" });
     const all = res.data.result.content;
@@ -387,7 +392,6 @@ const initCache = async () => {
       }
     });
   }
-  // Lấy tên thể loại đã chọn
   if (form.value.categoryIds.length) {
     const res = await getCategories({ page: 0, size: 50, sort: "ASC" });
     const all = res.data.result.content;
@@ -400,7 +404,6 @@ const initCache = async () => {
   }
 };
 
-// Đóng dropdown khi click ra ngoài
 const onClickOutside = (e) => {
   if (authorDropdownRef.value && !authorDropdownRef.value.contains(e.target)) {
     showAuthorDropdown.value = false;
@@ -444,6 +447,7 @@ const handleSave = () => {
   payload.append("isbn",              form.value.isbn ?? "");
   payload.append("quantity",          form.value.quantity ?? 0);
   payload.append("availableQuantity", form.value.availableQuantity ?? form.value.quantity ?? 0);
+  payload.append("price",             form.value.price ?? 0);
   payload.append("description",       form.value.description ?? "");
 
   if (imageFile.value) payload.append("image", imageFile.value);

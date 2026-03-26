@@ -45,7 +45,7 @@ const routes = [
   {
     path: "/member",
     component: () => import("@/views/MemberView.vue"),
-    meta: { role: "MEMBER" },
+    meta: { role: "STUDENT" },
   },
 ];
 

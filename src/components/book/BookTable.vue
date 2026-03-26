@@ -19,6 +19,7 @@
             <th :class="TH">ISBN</th>
             <th :class="TH">Số lượng</th>
             <th :class="TH">Sẵn có</th>
+            <th :class="TH">Giá bìa</th>
             <th :class="TH">Mô tả</th>
             <th :class="[TH, 'text-right']">Thao tác</th>
           </tr>
@@ -30,7 +31,7 @@
               <td class="px-4 py-3">
                 <div class="w-8 h-11 rounded-lg bg-slate-100 animate-pulse" />
               </td>
-              <td v-for="j in 7" :key="j" class="px-4 py-3">
+              <td v-for="j in 8" :key="j" class="px-4 py-3">
                 <div class="h-3.5 rounded bg-slate-100 animate-pulse" :style="{ width: j === 1 ? '75%' : '55%' }" />
               </td>
               <td class="px-4 py-3">
@@ -88,6 +89,11 @@
                 >
                   {{ b.availableQuantity ?? '—' }}
                 </span>
+              </td>
+
+              <!-- Giá bìa -->
+              <td class="px-4 py-3 text-slate-600 whitespace-nowrap">
+                {{ b.price != null ? formatPrice(b.price) : '—' }}
               </td>
 
               <!-- Mô tả -->
@@ -173,6 +179,9 @@ const props = defineProps({
 const emit = defineEmits(["view", "edit", "remove", "page-change", "sort-change"]);
 
 const TH = "px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap";
+
+const formatPrice = (value) =>
+  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(value);
 
 // ── Pagination numbers ────────────────────────────────────────
 const pageNumbers = computed(() => {
