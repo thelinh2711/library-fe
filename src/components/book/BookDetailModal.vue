@@ -26,11 +26,7 @@
 
         <!-- Cover image -->
         <div v-if="book?.imageUrl" class="flex justify-center">
-          <img
-            :src="book.imageUrl"
-            alt="cover"
-            class="h-40 rounded-xl object-cover shadow-md"
-          />
+          <img :src="book.imageUrl" alt="cover" class="h-40 rounded-xl object-cover shadow-md" />
         </div>
 
         <!-- Info Grid -->
@@ -58,6 +54,15 @@
           <div class="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0"></div>
           <p class="text-sm text-slate-600">Số lượng sẵn có:</p>
           <p class="ml-auto text-emerald-700 font-bold text-sm">{{ book?.availableQuantity ?? '—' }}</p>
+        </div>
+
+        <!-- Giá bìa -->
+        <div class="flex items-center gap-3 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3">
+          <div class="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0"></div>
+          <p class="text-sm text-slate-600">Giá bìa:</p>
+          <p class="ml-auto text-amber-700 font-bold text-sm">
+            {{ book?.price != null ? formatPrice(book.price) : '—' }}
+          </p>
         </div>
 
         <!-- Description -->
@@ -112,6 +117,9 @@
 </template>
 
 <script setup>
+const formatPrice = (value) =>
+  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(value);
+
 defineProps({
   book: { type: Object, default: null },
 });

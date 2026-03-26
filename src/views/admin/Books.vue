@@ -23,9 +23,8 @@
           />
         </div>
 
-        <!-- Category filter (searchable dropdown) -->
+        <!-- Category filter -->
         <div class="relative" ref="categoryDropdownRef">
-          <!-- Trigger -->
           <button
             type="button"
             class="h-9 min-w-[160px] rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none flex items-center justify-between gap-2 transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 cursor-pointer"
@@ -39,12 +38,7 @@
             </svg>
           </button>
 
-          <!-- Dropdown panel -->
-          <div
-            v-if="showCategoryDropdown"
-            class="absolute right-0 mt-1 w-56 bg-white border border-slate-200 rounded-xl shadow-lg z-30 overflow-hidden"
-          >
-            <!-- Search input -->
+          <div v-if="showCategoryDropdown" class="absolute right-0 mt-1 w-56 bg-white border border-slate-200 rounded-xl shadow-lg z-30 overflow-hidden">
             <div class="p-2 border-b border-slate-100">
               <div class="relative">
                 <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none"
@@ -59,8 +53,6 @@
                 />
               </div>
             </div>
-
-            <!-- Options list -->
             <ul class="max-h-52 overflow-y-auto py-1">
               <li>
                 <button
@@ -134,8 +126,6 @@
       :is-edit="isEdit"
       :initial-form="form"
       :existing-image-url="existingImageUrl"
-      :authors="authorStore.allAuthors"
-      :categories="categoryStore.allCategories"
       @close="showModal = false"
       @save="handleSave"
     />
@@ -150,14 +140,13 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, nextTick } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from "vue";
 import { useBookStore } from "@/stores/bookStore";
 import { useAuthorStore } from "@/stores/authorStore";
 import { useCategoryStore } from "@/stores/categoryStore";
 import BookTable from "@/components/book/BookTable.vue";
 import BookFormModal from "@/components/book/BookFormModal.vue";
 import BookDetailModal from "@/components/book/BookDetailModal.vue";
-import { watch } from "vue";
 
 const bookStore = useBookStore();
 const authorStore = useAuthorStore();
@@ -177,9 +166,7 @@ const categorySearchInput = ref(null);
 
 const selectedCategoryLabel = computed(() =>
   bookStore.category
-    ? (categoryStore.categories || []).find(
-        (c) => c.name === bookStore.category
-      )?.name ?? bookStore.category
+    ? (categoryStore.categories || []).find((c) => c.name === bookStore.category)?.name ?? bookStore.category
     : "Tất cả thể loại"
 );
 
@@ -218,9 +205,7 @@ onMounted(async () => {
   document.addEventListener("click", onClickOutside);
 });
 
-onBeforeUnmount(() => {
-  document.removeEventListener("click", onClickOutside);
-});
+onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
 
 watch(categorySearch, async (val) => {
   await categoryStore.search(val);
@@ -234,6 +219,7 @@ const defaultForm = () => ({
   isbn: "",
   quantity: 0,
   availableQuantity: 0,
+  price: null,           // thêm mới
   description: "",
   authors: [],
   categoryIds: [],
@@ -259,15 +245,16 @@ const openEdit = async (book) => {
   existingImageUrl.value = detail.imageUrl || null;
 
   form.value = {
-    title: detail.title,
-    publisher: detail.publisher,
-    publishYear: detail.publishYear,
-    isbn: detail.isbn,
-    quantity: detail.quantity,
+    title:             detail.title,
+    publisher:         detail.publisher,
+    publishYear:       detail.publishYear,
+    isbn:              detail.isbn,
+    quantity:          detail.quantity,
     availableQuantity: detail.availableQuantity,
-    description: detail.description,
-    authors: detail.authors?.map((a) => ({ authorId: a.id, role: a.role })) || [],
-    categoryIds: detail.categories?.map((c) => c.id) || [],
+    price:             detail.price ?? null,    // thêm mới
+    description:       detail.description,
+    authors:           detail.authors?.map((a) => ({ authorId: a.id, role: a.role })) || [],
+    categoryIds:       detail.categories?.map((c) => c.id) || [],
   };
 
   showModal.value = true;
