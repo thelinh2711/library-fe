@@ -14,10 +14,6 @@ const routes = [
     meta: { role: "ADMIN" },
     children: [
       {
-        path: "",
-        component: () => import("@/views/AdminView.vue"),
-      },
-      {
         path: "books",
         component: () => import("@/views/admin/Books.vue"),
       },
@@ -33,6 +29,21 @@ const routes = [
         path: "students",
         component: () => import("@/views/admin/Students.vue"),
       },
+      {
+        path: "reservations",
+        name: "Reservations",
+        component: () => import("@/views/admin/Reservations.vue"),
+      },
+      {
+        path: "borrows",
+        name: "Borrows",
+        component: () => import("@/views/admin/Borrows.vue"),
+      },
+      {
+        path: "fines",
+        name: "Fines",
+        component: () => import("@/views/admin/Fines.vue"),
+      },
     ],
   },
 
@@ -43,9 +54,31 @@ const routes = [
     meta: { role: "LIBRARIAN" },
   },
   {
-    path: "/member",
-    component: () => import("@/views/MemberView.vue"),
+    path: "/student",
+    component: () => import("@/layouts/student/StudentLayout.vue"),
     meta: { role: "STUDENT" },
+    children: [
+      {
+        path: "",
+        name: "student-books",
+        component: () => import("@/views/student/BooksView.vue"),
+      },
+      {
+        path: "reservations",
+        name: "student-reservations",
+        component: () => import("@/views/student/ReservationsView.vue"),
+      },
+       {
+        path: "borrowings",
+        name: "student-borrowings",
+        component: () => import("@/views/student/MyBorrowings.vue"),
+      },
+      { 
+        path: "profile",     
+        name: "student-profile",      
+        component: () => import("@/views/student/StudentProfile.vue") 
+      },
+    ],
   },
 ];
 

@@ -18,6 +18,10 @@ const studentService = {
     const params = faculty ? { faculty } : {};
     return axiosClient.get("/students/classes", { params });
   },
+
+  // ── Profile ───────────────────────────────────────────────────────────────
+  getMyProfile()       { return axiosClient.get("/students/me"); },
+  changePassword(data) { return axiosClient.put("/auth/change-password", data); },
 };
 
 export default studentService;

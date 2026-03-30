@@ -2,7 +2,7 @@
 <template>
   <div class="flex h-screen overflow-hidden bg-[#f5f5f7]" style="font-family: 'DM Sans', sans-serif;">
 
-    <!-- ── Sidebar (fixed) ──────────────────────────────────── -->
+    <!-- ── Sidebar ───────────────────────────────────────────── -->
     <aside class="fixed inset-y-0 left-0 z-30 flex w-60 flex-col bg-[#0f1117] border-r border-white/[0.06]">
 
       <!-- Logo -->
@@ -16,21 +16,48 @@
       </div>
 
       <!-- Nav -->
-      <nav class="flex flex-1 flex-col gap-0.5 overflow-y-auto px-3 py-4">
-        <p class="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-white/25">Menu</p>
+      <nav class="flex flex-1 flex-col overflow-y-auto px-3 py-4">
 
-        <router-link
-          v-for="item in navItems"
-          :key="item.to"
-          :to="item.to"
-          class="nav-item group flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-medium text-white/40 transition-all duration-150 hover:bg-white/5 hover:text-white/80"
-          active-class="nav-item--active"
-        >
-          <span class="nav-icon flex h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-lg bg-white/[0.05] transition-all duration-150">
-            <component :is="item.icon" class="h-[14px] w-[14px]" />
-          </span>
-          {{ item.label }}
-        </router-link>
+        <!-- Danh mục -->
+        <p class="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-white/25">Danh mục</p>
+        <div class="flex flex-col gap-0.5 mb-5">
+          <router-link
+            v-for="item in catalogItems"
+            :key="item.to"
+            :to="item.to"
+            class="nav-item group flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-medium text-white/40 transition-all duration-150 hover:bg-white/5 hover:text-white/80"
+            active-class="nav-item--active"
+          >
+            <span class="nav-icon flex h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-lg bg-white/[0.05] transition-all duration-150">
+              <component :is="item.icon" class="h-[14px] w-[14px]" />
+            </span>
+            {{ item.label }}
+          </router-link>
+        </div>
+
+        <!-- Mượn trả -->
+        <p class="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-white/25">Mượn trả</p>
+        <div class="flex flex-col gap-0.5">
+          <router-link
+            v-for="item in borrowItems"
+            :key="item.to"
+            :to="item.to"
+            class="nav-item group flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-medium text-white/40 transition-all duration-150 hover:bg-white/5 hover:text-white/80"
+            active-class="nav-item--active"
+          >
+            <span class="nav-icon flex h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-lg bg-white/[0.05] transition-all duration-150">
+              <component :is="item.icon" class="h-[14px] w-[14px]" />
+            </span>
+            <span class="flex-1">{{ item.label }}</span>
+            <!-- Badge số lượng pending (nếu có) -->
+            <span
+              v-if="item.badge && item.badge.value > 0"
+              class="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-indigo-500/80 px-1 text-[10px] font-semibold text-white"
+            >
+              {{ item.badge.value }}
+            </span>
+          </router-link>
+        </div>
       </nav>
 
       <!-- Logout -->
@@ -47,7 +74,7 @@
       </div>
     </aside>
 
-    <!-- ── Main (offset sidebar) ────────────────────────────── -->
+    <!-- ── Main ──────────────────────────────────────────────── -->
     <div class="ml-60 flex flex-1 flex-col overflow-hidden">
 
       <!-- Topbar -->
@@ -68,14 +95,32 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, ref, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import { LogOut, LayoutDashboard, BookOpen, Tag, Users, GraduationCap } from "lucide-vue-next";
+import {
+  LogOut, LayoutDashboard, BookOpen, Tag, Users,
+  GraduationCap, BookMarked, ClipboardList, ReceiptText,
+} from "lucide-vue-next";
+import { getReservations } from "@/services/reservationService";
 
 const router = useRouter();
 const route  = useRoute();
 
-const navItems = [
+const pendingCount = ref(0);
+
+// Lấy số đặt trước đang chờ duyệt để hiện badge
+onMounted(async () => {
+  try {
+    const res = await getReservations({
+      status: "PENDING",
+      page: 0,
+      size: 1,
+    });
+    pendingCount.value = res.data.result.totalElements ?? 0;
+  } catch {}
+});
+
+const catalogItems = [
   { to: "/admin",            label: "Dashboard", icon: LayoutDashboard },
   { to: "/admin/books",      label: "Sách",       icon: BookOpen        },
   { to: "/admin/categories", label: "Thể loại",   icon: Tag             },
@@ -83,10 +128,23 @@ const navItems = [
   { to: "/admin/students",   label: "Sinh viên",  icon: GraduationCap   },
 ];
 
+const borrowItems = [
+  {
+    to: "/admin/reservations",
+    label: "Đặt trước",
+    icon: BookMarked,
+    badge: pendingCount,   // reactive ref — hiện số PENDING
+  },
+  { to: "/admin/borrows", label: "Mượn sách", icon: ClipboardList },
+  { to: "/admin/fines",   label: "Phiếu phạt", icon: ReceiptText  },
+];
+
+const allItems = [...catalogItems, ...borrowItems];
+
 const currentTitle = computed(() => {
   const match =
-    navItems.find((i) => i.to !== "/admin" && route.path.startsWith(i.to)) ??
-    navItems.find((i) => route.path === i.to);
+    allItems.find((i) => i.to !== "/admin" && route.path.startsWith(i.to)) ??
+    allItems.find((i) => route.path === i.to);
   return match?.label ?? "Dashboard";
 });
 
