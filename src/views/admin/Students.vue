@@ -155,11 +155,11 @@ import {
 } from "lucide-vue-next";
 
 import { useStudentStore } from "@/stores/studentStore";
-import StudentSearchBar   from "@/components/student/StudentSearchBar.vue";
-import StudentTable       from "@/components/student/StudentTable.vue";
-import StudentFormModal   from "@/components/student/StudentFormModal.vue";
-import StudentImportModal from "@/components/student/StudentImportModal.vue";
-import StudentDeleteModal from "@/components/student/StudentDeleteModal.vue";
+import StudentSearchBar   from "@/components/admin/student/StudentSearchBar.vue";
+import StudentTable       from "@/components/admin/student/StudentTable.vue";
+import StudentFormModal   from "@/components/admin/student/StudentFormModal.vue";
+import StudentImportModal from "@/components/admin/student/StudentImportModal.vue";
+import StudentDeleteModal from "@/components/admin/student/StudentDeleteModal.vue";
 
 const store = useStudentStore();
 

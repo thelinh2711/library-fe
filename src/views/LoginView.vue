@@ -23,13 +23,9 @@ const handleLogin = async (data) => {
     loading.value = true;
     error.value = "";
 
-    console.log("Login data:", data);
-
     await authStore.login(data.email, data.password);
 
   } catch (err) {
-  console.error("❌ FULL ERROR:", err);
-  console.error("❌ RESPONSE:", err.response);
 
   error.value =
     err.response?.data?.message ||

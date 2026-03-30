@@ -34,24 +34,20 @@ export const useAuthStore = defineStore("auth", {
     },
 
     async refreshTokenAction() {
-      console.log("📡 [REFRESH API] START");
 
       const res = await refreshApi();
-
-      console.log("📥 [REFRESH API] RESPONSE:", res.data);
 
       const newAccessToken = res.data.result.accessToken;
 
       this.accessToken = newAccessToken;
       localStorage.setItem("accessToken", newAccessToken);
-      console.log("💾 TOKEN ĐÃ LƯU LOCALSTORAGE");
       return newAccessToken;
     },
 
     redirectByRole(role) {
       if (role === "ADMIN") router.push("/admin");
       else if (role === "LIBRARIAN") router.push("/librarian");
-      else router.push("/member");
+      else router.push("/student");
     },
 
     logout() {

@@ -144,9 +144,9 @@ import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from "vue"
 import { useBookStore } from "@/stores/bookStore";
 import { useAuthorStore } from "@/stores/authorStore";
 import { useCategoryStore } from "@/stores/categoryStore";
-import BookTable from "@/components/book/BookTable.vue";
-import BookFormModal from "@/components/book/BookFormModal.vue";
-import BookDetailModal from "@/components/book/BookDetailModal.vue";
+import BookTable from "@/components/admin/book/BookTable.vue";
+import BookFormModal from "@/components/admin/book/BookFormModal.vue";
+import BookDetailModal from "@/components/admin/book/BookDetailModal.vue";
 
 const bookStore = useBookStore();
 const authorStore = useAuthorStore();
