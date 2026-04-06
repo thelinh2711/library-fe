@@ -6,12 +6,20 @@ const axiosClient = axios.create({
   withCredentials: true, // 👈 QUAN TRỌNG (để gửi cookie)
 });
 
+const PUBLIC_ROUTES = [
+  "/auth/forgot-password",
+  "/auth/verify-otp",
+  "/auth/reset-password",
+];
+
 axiosClient.interceptors.request.use((config) => {
   const authStore = useAuthStore();
-  console.log("➡️ REQUEST:", config.url);
-  console.log("🔑 ACCESS TOKEN HIỆN TẠI:", authStore.accessToken);
 
-  if (authStore.accessToken) {
+  const isPublicRoute = PUBLIC_ROUTES.some((route) =>
+    config.url?.includes(route)
+  );
+
+  if (authStore.accessToken && !isPublicRoute) {  // 👈
     config.headers.Authorization = `Bearer ${authStore.accessToken}`;
   }
 
@@ -24,25 +32,21 @@ axiosClient.interceptors.response.use(
     const authStore = useAuthStore();
     const originalRequest = error.config;
 
+    const isPublicRoute = PUBLIC_ROUTES.some((route) =>        // 👈 thêm
+      originalRequest.url?.includes(route)
+    );
+
     if (
-      (error.response?.status === 401 || error.response?.status === 403)&&
-      !originalRequest._retry
+      (error.response?.status === 401 || error.response?.status === 403) &&
+      !originalRequest._retry &&
+      !isPublicRoute                                            // 👈 thêm
     ) {
-      console.log("⚠️ TOKEN HẾT HẠN → CALL REFRESH");
       originalRequest._retry = true;
-
       try {
-        console.log("📡 ĐANG GỌI REFRESH API...");
         const newToken = await authStore.refreshTokenAction();
-
-        console.log("✅ REFRESH THÀNH CÔNG");
-        console.log("🆕 TOKEN MỚI:", newToken);
-
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
-        console.log("🔁 GỬI LẠI REQUEST:", originalRequest.url);
         return axiosClient(originalRequest);
       } catch (err) {
-        console.log("💥 REFRESH FAIL → LOGOUT");
         authStore.logout();
       }
     }
