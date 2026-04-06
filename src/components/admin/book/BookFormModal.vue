@@ -450,6 +450,11 @@ const handleSave = () => {
   payload.append("price",             form.value.price ?? 0);
   payload.append("description",       form.value.description ?? "");
 
+  // ✅ Thêm version khi edit để BE kiểm tra Optimistic Lock
+  if (props.isEdit && form.value.version != null) {
+    payload.append("version", form.value.version);
+  }
+
   if (imageFile.value) payload.append("image", imageFile.value);
 
   const filteredAuthors = form.value.authors.filter((a) => a.authorId);

@@ -255,6 +255,7 @@ const openEdit = async (book) => {
     description:       detail.description,
     authors:           detail.authors?.map((a) => ({ authorId: a.id, role: a.role })) || [],
     categoryIds:       detail.categories?.map((c) => c.id) || [],
+    version:           detail.version,
   };
 
   showModal.value = true;

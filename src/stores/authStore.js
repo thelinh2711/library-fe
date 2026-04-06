@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { loginApi, refreshApi } from "@/services/authService";
+import { loginApi, refreshApi, logoutApi } from "@/services/authService";
 import router from "@/router";
 
 function parseJwt(token) {
@@ -50,19 +50,19 @@ export const useAuthStore = defineStore("auth", {
       else router.push("/student");
     },
 
-    logout() {
-      this.accessToken = null;
-      this.user = null;
-
-      localStorage.removeItem("accessToken");
-
-      // gọi BE xoá cookie + redis
-      fetch(`${import.meta.env.VITE_API_URL}/auth/logout`, {
-        method: "POST",
-        credentials: "include", // 👈 QUAN TRỌNG
-      });
-
-      router.push("/login");
-    },
+    async logout() {
+  try {
+    await logoutApi();
+  } catch (err) {
+    console.warn("Logout API lỗi:", err);           // 👈 log toàn bộ err
+    console.warn("err.response:", err.response);
+    console.warn("err.message:", err.message);
+  } finally {
+    this.accessToken = null;
+    this.user = null;
+    localStorage.removeItem("accessToken");
+    router.push("/login");
+  }
+},
   },
 });

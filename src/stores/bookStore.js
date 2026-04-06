@@ -67,7 +67,12 @@ export const useBookStore = defineStore("book", {
         toast.success("Cập nhật sách thành công ✨");
         await this.fetchBooks();
       } catch (err) {
-        toast.error(err.response?.data?.message || "Lỗi khi cập nhật sách");
+        // ✅ Bắt lỗi 409 Conflict do Optimistic Locking
+        if (err.response?.status === 409) {
+          toast.error("Sách vừa được admin khác chỉnh sửa. Vui lòng tải lại trang và thử lại.");
+        } else {
+          toast.error(err.response?.data?.message || "Lỗi khi cập nhật sách");
+        }
       }
     },
 
