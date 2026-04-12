@@ -64,7 +64,7 @@ const handleLogin = async (data) => {
 };
 
 const handleLoginGoogle = () => {
-  // xử lý google login
+  window.location.href = 'http://localhost:8081/oauth2/authorization/google'
 };
 
 const handleOtpSent = (email) => {

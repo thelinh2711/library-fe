@@ -99,6 +99,7 @@
                   <Pencil class="h-3.5 w-3.5" />
                 </button>
                 <button
+                  v-if="authStore.canDelete"
                   class="w-7 h-7 rounded-lg bg-rose-50 text-rose-400 hover:bg-rose-500 hover:text-white flex items-center justify-center transition"
                   title="Xóa"
                   @click="remove(a.id)"
@@ -236,7 +237,9 @@
 import { computed, onMounted, reactive, ref } from "vue";
 import { useAuthorStore } from "@/stores/authorStore";
 import { Plus, Pencil, Trash2, UserRound, Search, X, ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-vue-next";
+import { useAuthStore } from "@/stores/authStore";
 
+const authStore = useAuthStore();
 const authorStore = useAuthorStore();
 
 const keyword   = ref("");

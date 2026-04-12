@@ -6,6 +6,10 @@ import AdminLayout from "@/layouts/admin/AdminLayout.vue";
 
 const routes = [
   { path: "/login", component: LoginView },
+  {
+    path: '/auth/callback',
+    component: () => import('@/views/AuthCallback.vue'),
+  },
 
   // ADMIN (có sidebar)
   {
@@ -50,8 +54,17 @@ const routes = [
   // OTHER ROLE
   {
     path: "/librarian",
-    component: () => import("@/views/LibrarianView.vue"),
+    component: AdminLayout,
     meta: { role: "LIBRARIAN" },
+    children: [
+      { path: "books",        component: () => import("@/views/admin/Books.vue") },
+      { path: "categories",   component: () => import("@/views/admin/Categories.vue") },
+      { path: "authors",      component: () => import("@/views/admin/Authors.vue") },
+      { path: "students",     component: () => import("@/views/admin/Students.vue") },
+      { path: "reservations", component: () => import("@/views/admin/Reservations.vue") },
+      { path: "borrows",      component: () => import("@/views/admin/Borrows.vue") },
+      { path: "fines",        component: () => import("@/views/admin/Fines.vue") },
+    ],
   },
   {
     path: "/student",
@@ -92,7 +105,7 @@ router.beforeEach((to, from, next) => {
   const token = localStorage.getItem("accessToken");
 
   // chưa login
-  if (!token && to.path !== "/login") {
+  if (!token && to.path !== "/login" && to.path !== "/auth/callback") {
     return next("/login");
   }
 
