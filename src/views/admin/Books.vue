@@ -112,6 +112,7 @@
       :loading="bookStore.loading"
       :page="bookStore.page"
       :total-pages="bookStore.totalPages"
+      :can-delete="authStore.canDelete"
       @view="viewDetail"
       @edit="openEdit"
       @remove="remove"
@@ -144,6 +145,7 @@ import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from "vue"
 import { useBookStore } from "@/stores/bookStore";
 import { useAuthorStore } from "@/stores/authorStore";
 import { useCategoryStore } from "@/stores/categoryStore";
+import { useAuthStore } from "@/stores/authStore";
 import BookTable from "@/components/admin/book/BookTable.vue";
 import BookFormModal from "@/components/admin/book/BookFormModal.vue";
 import BookDetailModal from "@/components/admin/book/BookDetailModal.vue";
@@ -151,6 +153,7 @@ import BookDetailModal from "@/components/admin/book/BookDetailModal.vue";
 const bookStore = useBookStore();
 const authorStore = useAuthorStore();
 const categoryStore = useCategoryStore();
+const authStore = useAuthStore();
 
 const showModal = ref(false);
 const isEdit = ref(false);

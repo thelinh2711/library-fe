@@ -10,6 +10,7 @@ const PUBLIC_ROUTES = [
   "/auth/forgot-password",
   "/auth/verify-otp",
   "/auth/reset-password",
+  "/auth/refresh",
 ];
 
 axiosClient.interceptors.request.use((config) => {

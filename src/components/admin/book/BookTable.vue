@@ -110,6 +110,7 @@
                     <Pencil class="h-3.5 w-3.5" />
                   </button>
                   <button
+                    v-if="canDelete"
                     class="w-7 h-7 rounded-lg bg-rose-50 text-rose-400 hover:bg-rose-500 hover:text-white flex items-center justify-center transition"
                     title="Xóa"
                     @click="$emit('remove', b.id)"
@@ -174,6 +175,7 @@ const props = defineProps({
   loading:    { type: Boolean, default: false    },
   page:       { type: Number,  default: 0        },
   totalPages: { type: Number,  default: 1        },
+  canDelete: { type: Boolean, default: true },
 });
 
 const emit = defineEmits(["view", "edit", "remove", "page-change", "sort-change"]);

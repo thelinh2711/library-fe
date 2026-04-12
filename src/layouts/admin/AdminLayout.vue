@@ -102,56 +102,56 @@ import {
   GraduationCap, BookMarked, ClipboardList, ReceiptText,
 } from "lucide-vue-next";
 import { getReservations } from "@/services/reservationService";
+import { useAuthStore } from "@/stores/authStore";
 
 const router = useRouter();
 const route  = useRoute();
+const authStore = useAuthStore();
+
+// ✅ khai báo base trước khi dùng
+const base = computed(() =>
+  authStore.isLibrarian ? "/librarian" : "/admin"
+);
 
 const pendingCount = ref(0);
 
-// Lấy số đặt trước đang chờ duyệt để hiện badge
 onMounted(async () => {
   try {
-    const res = await getReservations({
-      status: "PENDING",
-      page: 0,
-      size: 1,
-    });
+    const res = await getReservations({ status: "PENDING", page: 0, size: 1 });
     pendingCount.value = res.data.result.totalElements ?? 0;
   } catch {}
 });
 
-const catalogItems = [
-  { to: "/admin",            label: "Dashboard", icon: LayoutDashboard },
-  { to: "/admin/books",      label: "Sách",       icon: BookOpen        },
-  { to: "/admin/categories", label: "Thể loại",   icon: Tag             },
-  { to: "/admin/authors",    label: "Tác giả",    icon: Users           },
-  { to: "/admin/students",   label: "Sinh viên",  icon: GraduationCap   },
-];
+const catalogItems = computed(() => [
+  { to: base.value,              label: "Dashboard", icon: LayoutDashboard },
+  { to: `${base.value}/books`,      label: "Sách",      icon: BookOpen        },
+  { to: `${base.value}/categories`, label: "Thể loại",  icon: Tag             },
+  { to: `${base.value}/authors`,    label: "Tác giả",   icon: Users           },
+  { to: `${base.value}/students`,   label: "Sinh viên", icon: GraduationCap   },
+]);
 
-const borrowItems = [
+const borrowItems = computed(() => [
   {
-    to: "/admin/reservations",
+    to: `${base.value}/reservations`,
     label: "Đặt trước",
     icon: BookMarked,
-    badge: pendingCount,   // reactive ref — hiện số PENDING
+    badge: pendingCount,
   },
-  { to: "/admin/borrows", label: "Mượn sách", icon: ClipboardList },
-  { to: "/admin/fines",   label: "Phiếu phạt", icon: ReceiptText  },
-];
+  { to: `${base.value}/borrows`, label: "Mượn sách",  icon: ClipboardList },
+  { to: `${base.value}/fines`,   label: "Phiếu phạt", icon: ReceiptText   },
+]);
 
-const allItems = [...catalogItems, ...borrowItems];
+// ✅ allItems phải là computed, dùng .value khi spread
+const allItems = computed(() => [...catalogItems.value, ...borrowItems.value]);
 
 const currentTitle = computed(() => {
   const match =
-    allItems.find((i) => i.to !== "/admin" && route.path.startsWith(i.to)) ??
-    allItems.find((i) => route.path === i.to);
+    allItems.value.find((i) => i.to !== base.value && route.path.startsWith(i.to)) ??
+    allItems.value.find((i) => route.path === i.to);
   return match?.label ?? "Dashboard";
 });
 
-const logout = () => {
-  localStorage.removeItem("accessToken");
-  router.push("/login");
-};
+const logout = () => authStore.logout();
 </script>
 
 <style scoped>

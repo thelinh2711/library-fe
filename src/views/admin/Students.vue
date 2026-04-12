@@ -71,7 +71,13 @@
         </div>
       </div>
 
-      <StudentTable :students="students" :loading="loading" @edit="openEdit" @delete="openDelete" @view="openEdit" />
+      <StudentTable 
+        :students="students" 
+        :loading="loading" 
+        :can-delete="authStore.canDelete"
+        @edit="openEdit" 
+        @delete="openDelete" 
+        @view="openEdit" />
 
       <!-- Pagination -->
       <div v-if="totalPages > 1" class="flex items-center justify-center gap-1 px-5 py-3.5 border-t border-slate-50">
@@ -155,6 +161,7 @@ import {
 } from "lucide-vue-next";
 
 import { useStudentStore } from "@/stores/studentStore";
+import { useAuthStore } from "@/stores/authStore";
 import StudentSearchBar   from "@/components/admin/student/StudentSearchBar.vue";
 import StudentTable       from "@/components/admin/student/StudentTable.vue";
 import StudentFormModal   from "@/components/admin/student/StudentFormModal.vue";
@@ -162,6 +169,7 @@ import StudentImportModal from "@/components/admin/student/StudentImportModal.vu
 import StudentDeleteModal from "@/components/admin/student/StudentDeleteModal.vue";
 
 const store = useStudentStore();
+const authStore = useAuthStore();
 
 const students    = computed(() => store.students);
 const total       = computed(() => store.total);
