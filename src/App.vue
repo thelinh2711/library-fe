@@ -1,10 +1,7 @@
-
 <template>
-  <p className="text-red-600 mb-4">
-    If you see this styled nicely, Tailwind is installed correctly.
-  </p>
+  <router-view />
 </template>
 
 <script setup>
-
+// không cần gì ở đây
 </script>
