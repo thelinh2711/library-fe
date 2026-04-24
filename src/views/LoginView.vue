@@ -64,7 +64,7 @@ const handleLogin = async (data) => {
 };
 
 const handleLoginGoogle = () => {
-  window.location.href = 'http://localhost:8081/oauth2/authorization/google'
+  window.location.href = `${import.meta.env.VITE_OAUTH_URL}/oauth2/authorization/google`
 };
 
 const handleOtpSent = (email) => {
