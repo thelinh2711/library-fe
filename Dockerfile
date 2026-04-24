@@ -1,6 +1,11 @@
-# Build Vue app
 FROM node:20 AS build
 WORKDIR /app
+
+ARG VITE_API_URL
+ARG VITE_OAUTH_URL
+
+ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_OAUTH_URL=$VITE_OAUTH_URL
 
 COPY package*.json ./
 RUN npm install
